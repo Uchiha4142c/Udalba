@@ -1,0 +1,238 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Infografía Interactiva: Planificación Didáctica</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #003087; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .slide { display: none; width: 600px; height: 400px; background: #FFFFFF; border: 2px solid #FF0000; border-radius: 10px; padding: 20px; text-align: center; }
+    .slide.active { display: block; }
+    h1 { font-size: 24px; color: #FF0000; }
+    p { font-size: 16px; color: #003087; }
+    .options { margin: 20px 0; }
+    button { padding: 10px 20px; margin: 5px; background: #FF0000; color: #FFFFFF; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #CC0000; }
+    .feedback { font-size: 14px; }
+    .nav { margin-top: 20px; }
+    .nav button { background: #003087; color: #FFFFFF; }
+    .nav button:hover { background: #001F5F; }
+    .nav button:disabled { background: #666; cursor: not-allowed; }
+    .form-frame { width: 640px; height: 5606px; border: none; }
+  </style>
+</head>
+<body>
+  <div id="slide0" class="slide active">
+    <h1>Instrucciones</h1>
+    <p>¡Bienvenido docente! Responde las preguntas completando las oraciones con las opciones. Haz clic en las respuestas y sigue las pistas. ¡Reforcemos nuestras habilidades docentes!</p>
+    <p><strong>Autores:</strong> Pablo Robledo, Hilda Rubio, Isaias Samit</p>
+    <p><strong>Universidad del Alba</strong>
+    </p>
+    <div class="nav">
+      <button onclick="showSlide(1)">Comenzar</button>
+    </div>
+  </div>
+  <div id="slide1" class="slide">
+    <h1>Definiciones</h1>
+    <p><strong>Planificación Didáctica:</strong> Es como un mapa detallado que el docente utiliza para estructurar y organizar el proceso de enseñanza-aprendizaje, asegurando una progresión lógica y atractiva. Ejemplo: Un profesor de historia crea un plan con temas semanales como la independencia de Chile, incluyendo lecturas y una discusión en clase.</p>
+    <p><strong>Syllabus:</strong> Es como un manual completo que detalla los objetivos, contenidos, metodologías y criterios de evaluación de un curso, sirviendo como guía para el docente y los estudiantes. Ejemplo: Un syllabus para un curso de literatura incluye un calendario de lecturas, ensayos y una rúbrica para calificar.</p>
+    <div class="nav">
+      <button onclick="showSlide(2)">Siguiente</button>
+    </div>
+  </div>
+  <div id="slide2" class="slide">
+    <h1>¿Qué representa la planificación?</h1>
+    <p>La planificación didáctica es una herramienta que el docente usa para ____ el curso.</p>
+    <div class="options">
+      <button onclick="selectAnswer(2, 'a', 'Intenta de nuevo, no es solo asistir.')">a) Asistir</button>
+      <button onclick="selectAnswer(2, 'b', '¡Correcto! Organiza y estructura el curso.')">b) Organizar</button>
+      <button onclick="selectAnswer(2, 'c', 'Intenta de nuevo, no es decorar.')">c) Decorar</button>
+    </div>
+    <p id="feedback2" class="feedback"></p>
+    <div class="nav">
+      <button onclick="showSlide(1)">Anterior</button>
+      <button id="next2" onclick="showSlide(3)" disabled>Siguiente</button>
+    </div>
+  </div>
+  <div id="slide3" class="slide">
+    <h1>¿Cuál es su propósito principal?</h1>
+    <p>Un buen plan didáctico asegura que los estudiantes ____ los objetivos de aprendizaje.</p>
+    <div class="options">
+      <button onclick="selectAnswer(3, 'a', 'Intenta de nuevo, no es solo escuchar.')">a) Escuchen</button>
+      <button onclick="selectAnswer(3, 'b', 'Intenta de nuevo, no es solo asistir.')">b) Asistan</button>
+      <button onclick="selectAnswer(3, 'c', '¡Correcto! Alcanzen los objetivos de aprendizaje.')">c) Alcanzen</button>
+    </div>
+    <p id="feedback3" class="feedback"></p>
+    <div class="nav">
+      <button onclick="showSlide(2)">Anterior</button>
+      <button id="next3" onclick="showSlide(4)" disabled>Siguiente</button>
+    </div>
+  </div>
+  <div id="slide4" class="slide">
+    <h1>¿Qué incluye la planificación?</h1>
+    <p>La planificación debe incluir objetivos, contenido, estrategias y ____.</p>
+    <div class="options">
+      <button onclick="selectAnswer(4, 'a', 'Intenta de nuevo, no es solo materiales.')">a) Materiales</button>
+      <button onclick="selectAnswer(4, 'b', '¡Correcto! Métodos de evaluación.')">b) Métodos de evaluación</button>
+      <button onclick="selectAnswer(4, 'c', 'Intenta de nuevo, no es solo horarios.')">c) Horarios</button>
+    </div>
+    <p id="feedback4" class="feedback"></p>
+    <div class="nav">
+      <button onclick="showSlide(3)">Anterior</button>
+      <button id="next4" onclick="showSlide(5)" disabled>Siguiente</button>
+    </div>
+  </div>
+  <div id="slide5" class="slide">
+    <h1>¿Qué es el syllabus en la universidad?</h1>
+    <p>El syllabus es un documento que ____ el curso académico.</p>
+    <div class="options">
+      <button onclick="selectAnswer(5, 'a', 'Intenta de nuevo, no es solo describe.')">a) Describe</button>
+      <button onclick="selectAnswer(5, 'b', 'Intenta de nuevo, no es solo presenta.')">b) Presenta</button>
+      <button onclick="selectAnswer(5, 'c', '¡Correcto! Estructura y detalla el curso académico.')">c) Estructura</button>
+    </div>
+    <p id="feedback5" class="feedback"></p>
+    <div class="nav">
+      <button onclick="showSlide(4)">Anterior</button>
+      <button id="next5" onclick="showSlide(6)" disabled>Siguiente</button>
+    </div>
+  </div>
+  <div id="slide6" class="slide">
+    <h1>¿Cómo apoya el syllabus?</h1>
+    <p>El syllabus ayuda al docente a ____ el desarrollo del curso.</p>
+    <div class="options">
+      <button onclick="selectAnswer(6, 'a', 'Intenta de nuevo, no es solo registrar.')">a) Registrar</button>
+      <button onclick="selectAnswer(6, 'b', '¡Correcto! Planificar y evaluar el desarrollo del curso.')">b) Planificar</button>
+      <button onclick="selectAnswer(6, 'c', 'Intenta de nuevo, no es solo decorar.')">c) Decorar</button>
+    </div>
+    <p id="feedback6" class="feedback"></p>
+    <div class="nav">
+      <button onclick="showSlide(5)">Anterior</button>
+      <button id="next6" onclick="showSlide(7)" disabled>Siguiente</button>
+    </div>
+  </div>
+  <div id="slide7" class="slide">
+    <h1>¿Cómo se conectan?</h1>
+    <p>La planificación y el syllabus se alinean para ____ los contenidos del curso.</p>
+    <div class="options">
+      <button onclick="selectAnswer(7, 'a', 'Intenta de nuevo, no es solo listar.')">a) Listar</button>
+      <button onclick="selectAnswer(7, 'b', 'Intenta de nuevo, no es solo dividir.')">b) Dividir</button>
+      <button onclick="selectAnswer(7, 'c', '¡Correcto! Integrar y secuenciar los contenidos del curso.')">c) Integrar</button>
+    </div>
+    <p id="feedback7" class="feedback"></p>
+    <div class="nav">
+      <button onclick="showSlide(6)">Anterior</button>
+      <button id="next7" onclick="showSlide(8)" disabled>Siguiente</button>
+    </div>
+  </div>
+  <div id="slide8" class="slide">
+    <h1>¿Qué rol tiene el docente?</h1>
+    <p>Con una buena planificación, el docente fomenta un aprendizaje ____.</p>
+    <div class="options">
+      <button onclick="selectAnswer(8, 'a', '¡Correcto! Activo y significativo.')">a) Activo</button>
+      <button onclick="selectAnswer(8, 'b', 'Intenta de nuevo, no es pasivo.')">b) Pasivo</button>
+      <button onclick="selectAnswer(8, 'c', 'Intenta de nuevo, no es repetitivo.')">c) Repetitivo</button>
+    </div>
+    <p id="feedback8" class="feedback"></p>
+    <div class="nav">
+      <button onclick="showSlide(7)">Anterior</button>
+      <button id="next8" onclick="showSlide(9)" disabled>Siguiente</button>
+    </div>
+  </div>
+  <div id="slide9" class="slide">
+    <h1>¡Listos para brillar!</h1>
+    <p>Con una planificación efectiva, el docente ____ su enseñanza.</p>
+    <div class="options">
+      <button onclick="selectAnswer(9, 'a', '¡Correcto! Mejora y enriquece su enseñanza. ¡Eres un docente excepcional! Sigue innovando.')">a) Mejora</button>
+      <button onclick="selectAnswer(9, 'b', 'Intenta de nuevo, no la complica.')">b) Complica</button>
+      <button onclick="selectAnswer(9, 'c', 'Intenta de nuevo, no la limita.')">c) Limita</button>
+    </div>
+    <p id="feedback9" class="feedback"></p>
+    <div class="nav">
+      <button onclick="showSlide(8)">Anterior</button>
+      <button id="next9" onclick="showSlide(10)" disabled>Siguiente</button>
+    </div>
+  </div>
+  <div id="slide10" class="slide">
+    <h1>¡Completa la evaluación!</h1>
+    <p>Gracias por participar. Por favor, rellena este formulario:</p>
+    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeTUXtqDmuc1xoYLxr3rizxrROU57LRKsX3U8FvfhJ8P8kuRA/viewform?usp=header" class="form-frame"></iframe>
+    <div class="nav">
+      <button onclick="showSlide(1)">Volver a empezar</button>
+    </div>
+  </div>
+
+  <script>
+    let currentSlide = 0;
+    let answered = new Array(10).fill(false);
+
+    function showSlide(slideNum) {
+      document.querySelectorAll('.slide').forEach(slide => slide.classList.remove('active'));
+      document.getElementById('slide' + slideNum).classList.add('active');
+      currentSlide = slideNum;
+      updateButtons();
+    }
+
+    function selectAnswer(slideNum, option, feedback) {
+      const feedbackElement = document.getElementById('feedback' + slideNum);
+      feedbackElement.innerText = feedback;
+      feedbackElement.style.color = feedback.includes('¡Correcto!') ? '#003087' : '#FF0000';
+      answered[slideNum] = true;
+      updateButtons();
+    }
+
+    function updateButtons() {
+      for (let i = 2; i <= 9; i++) {
+        const nextButton = document.getElementById('next' + i);
+        if (nextButton) {
+          nextButton.disabled = !answered[i];
+        }
+      }
+    }
+
+    // Inicializar botones
+    document.querySelectorAll('.nav button').forEach(button => {
+      if (button.textContent === 'Siguiente' && button.id.startsWith('next')) {
+        button.disabled = true;
+      }
+    });
+  </script>
+</body>
+</html>
